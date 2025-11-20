@@ -1,0 +1,15 @@
+# Ignore Node.js dependencies
+node_modules/
+
+# Ignore generated docs
+/docs
+
+# Python venv and build artifacts
+apps/collector-python/.venv
+
+# Nest build output
+apps/api/dist
+
+# Environment variables and logs
+*.env
+*.log

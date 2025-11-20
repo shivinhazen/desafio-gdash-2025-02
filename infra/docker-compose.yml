@@ -1,0 +1,61 @@
+version: '3.9'
+
+services:
+  mongo:
+    image: mongo:7.0
+    container_name: gdash-mongo
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_DATABASE: gdash
+    volumes:
+      - mongo-data:/data/db
+    ports:
+      - '27017:27017'
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: gdash-rabbitmq
+    restart: unless-stopped
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    ports:
+      - '5672:5672'
+      - '15672:15672'
+    volumes:
+      - rabbitmq-data:/var/lib/rabbitmq
+
+  api:
+    build:
+      context: ../apps/api
+      dockerfile: Dockerfile
+    container_name: gdash-api
+    depends_on:
+      - mongo
+      - rabbitmq
+    env_file:
+      - ../.env
+    ports:
+      - '3000:3000'
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ../apps/frontend
+      dockerfile: Dockerfile
+    container_name: gdash-frontend
+    depends_on:
+      - api
+    env_file:
+      - ../.env
+    ports:
+      - '4173:4173'
+    restart: unless-stopped
+
+volumes:
+  mongo-data:
+  rabbitmq-data:
+
+networks:
+  default:
+    driver: bridge
