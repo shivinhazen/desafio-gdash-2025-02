@@ -23,3 +23,5 @@ export class WeatherLog {
 }
 
 export const WeatherLogSchema = SchemaFactory.createForClass(WeatherLog);
+// Garante idempotência: um registro único por cidade + timestamp.
+WeatherLogSchema.index({ city: 1, timestamp: 1 }, { unique: true });

@@ -13,3 +13,13 @@ apps/api/dist
 # Environment variables and logs
 *.env
 *.log
+
+# Ambientes e temporários
+.venv/
+tmp/
+__pycache__/
+*.pyc
+
+# Arquivos temporários locais
+diff_app.txt
+tmp_print.py

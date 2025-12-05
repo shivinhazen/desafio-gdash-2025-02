@@ -13,11 +13,13 @@
     "allowImportingTsExtensions": true,
     "verbatimModuleSyntax": true,
     "moduleDetection": "force",
+    "resolveJsonModule": true,
     "noEmit": true,
     "jsx": "react-jsx",
     "baseUrl": ".",
     "paths": {
       "@/components/*": ["src/components/*"],
+      "@/hooks/*": ["src/hooks/*"],
       "@/lib/*": ["src/lib/*"]
     },
 

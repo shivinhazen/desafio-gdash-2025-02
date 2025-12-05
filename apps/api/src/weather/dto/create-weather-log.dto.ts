@@ -1,10 +1,10 @@
-import { IsObject, IsOptional, IsString } from 'class-validator';
+import { IsISO8601, IsObject, IsOptional, IsString } from 'class-validator';
 
 export class CreateWeatherLogDto {
   @IsString()
   city: string;
 
-  @IsString()
+  @IsISO8601()
   timestamp: string;
 
   @IsString()

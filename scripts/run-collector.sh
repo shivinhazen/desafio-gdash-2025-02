@@ -2,20 +2,62 @@
 set -euo pipefail
 
 SCRIPT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-APP_DIR="$SCRIPT_ROOT/../apps/collector-python"
+REPO_ROOT="$SCRIPT_ROOT/.."
+APP_DIR="$REPO_ROOT/apps/collector-python"
+ENV_FILE="$REPO_ROOT/.env"
 
-cd "$APP_DIR"
+usage() {
+  cat <<'EOF'
+Uso: ./scripts/run-collector.sh [seed|loop]
 
-# cria o virtualenv se não existir
-if [[ ! -d ".venv" ]]; then
-  python3 -m venv .venv
+  seed  - roda uma janela histórica única usando sync_range
+  loop  - roda sync_range em loop (dados quase em tempo real)
+EOF
+}
+
+if [[ $# -ne 1 ]]; then
+  usage
+  exit 1
 fi
 
-source .venv/bin/activate
+MODE="$1"
+case "$MODE" in
+  seed|loop) ;;
+  *)
+    usage
+    exit 1
+    ;;
+esac
 
-pip install -r requirements.txt
+if [[ -f "$ENV_FILE" ]]; then
+  echo "[run-collector] Carregando variáveis de $ENV_FILE"
+  set -a
+  # shellcheck disable=SC1090
+  source "$ENV_FILE"
+  set +a
+else
+  echo "[run-collector] Aviso: .env não encontrado; prosseguindo com variáveis atuais"
+fi
 
-# usa RabbitMQ exposto pelo Docker Desktop
-export COLLECTOR_BROKER_URL=${COLLECTOR_BROKER_URL:-amqp://guest:guest@localhost:5672/}
+resolve_python() {
+  if [[ -x "$REPO_ROOT/.venv/bin/python" ]]; then
+    echo "$REPO_ROOT/.venv/bin/python"
+    return
+  fi
+  if command -v python >/dev/null 2>&1; then
+    echo "python"
+    return
+  fi
+  if command -v python3 >/dev/null 2>&1; then
+    echo "python3"
+    return
+  fi
+  echo "[run-collector] Erro: não foi possível encontrar python/python3 ou .venv/bin/python" >&2
+  exit 1
+}
 
-python main.py
+PYTHON_BIN="$(resolve_python)"
+
+cd "$APP_DIR"
+echo "[run-collector] Rodando modo '$MODE' com $PYTHON_BIN apps/collector-python/main.py"
+"$PYTHON_BIN" main.py "$MODE"
