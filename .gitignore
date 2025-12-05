@@ -1,25 +1,54 @@
-# Ignore Node.js dependencies
+############################
+# Dependências e builds JS #
+############################
 node_modules/
+**/node_modules/
+build/
+**/dist/
+**/.next/
+**/.turbo/
+**/coverage/
+/.pnp
+.pnp.js
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
 
-# Ignore generated docs
-/docs
+#####################
+# Variáveis locais #
+#####################
+.env
+.env.*
+!.env.example
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
 
-# Python venv and build artifacts
-apps/collector-python/.venv
-
-# Nest build output
-apps/api/dist
-
-# Environment variables and logs
-*.env
-*.log
-
-# Ambientes e temporários
+################
+# Python/venv #
+################
 .venv/
-tmp/
-__pycache__/
-*.pyc
+apps/collector-python/.venv/
+**/__pycache__/
+**/*.pyc
 
-# Arquivos temporários locais
+#######################
+# Artefatos da stack #
+#######################
+apps/api/dist/
+apps/frontend/dist/
+docs/
+
+################
+# Temporários #
+################
+tmp/
+tmp_*/
 diff_app.txt
-tmp_print.py
+*_print.py
+
+####################
+# Área quarentena #
+####################
+_cleanup_quarantine/
