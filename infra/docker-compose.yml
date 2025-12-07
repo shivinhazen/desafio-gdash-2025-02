@@ -17,6 +17,12 @@ services:
     environment:
       RABBITMQ_DEFAULT_USER: guest
       RABBITMQ_DEFAULT_PASS: guest
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
     ports:
       - '5672:5672'
       - '15672:15672'
@@ -48,6 +54,41 @@ services:
       - ../.env
     ports:
       - '4173:4173'
+    restart: unless-stopped
+
+  collector:
+    build:
+      context: ../apps/collector-python
+      dockerfile: Dockerfile
+    container_name: gdash-collector
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    env_file:
+      - ../.env
+    environment:
+      COLLECTOR_QUEUE: weather-logs
+      COLLECTOR_BROKER_URL: amqp://guest:guest@rabbitmq:5672/
+      SYNC_QUEUE: weather-logs
+      SYNC_BROKER_URL: amqp://guest:guest@rabbitmq:5672/
+    restart: unless-stopped
+
+  worker:
+    build:
+      context: ../apps/worker-go
+      dockerfile: Dockerfile
+    container_name: gdash-worker
+    depends_on:
+      - rabbitmq
+      - api
+    env_file:
+      - ../.env
+    environment:
+      RABBITMQ_URL: amqp://guest:guest@rabbitmq:5672/
+      WEATHER_QUEUE: weather-logs
+      API_URL: http://api:3000/api/weather/logs
+      API_AUTH_EMAIL: ${API_AUTH_EMAIL:-${DEFAULT_ADMIN_EMAIL:-admin@example.com}}
+      API_AUTH_PASSWORD: ${API_AUTH_PASSWORD:-${DEFAULT_ADMIN_PASSWORD:-123456}}
     restart: unless-stopped
 
 volumes:

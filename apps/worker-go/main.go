@@ -237,8 +237,11 @@ func obtainAuthToken(client *http.Client, apiURL string) (string, error) {
 }
 
 func fixInternalHost(value string) string {
-	if strings.Contains(value, "://api:") {
-		return strings.Replace(value, "://api:", "://localhost:", 1)
+	preferLocal := os.Getenv("WORKER_PREFER_LOCALHOST")
+	if preferLocal == "1" || strings.EqualFold(preferLocal, "true") {
+		if strings.Contains(value, "://api:") {
+			return strings.Replace(value, "://api:", "://localhost:", 1)
+		}
 	}
 	return value
 }

@@ -54,6 +54,8 @@ import {
   ArrowUp,
   ArrowUpLeft,
   ArrowUpRight,
+  CheckCircle2,
+  Clock,
   CloudRain,
   Droplet,
   Download,
@@ -2098,12 +2100,16 @@ function Dashboard() {
   const handleVisibleColumnsChange = useCallback((cols: number) => {
     setHeatmapColumns(cols)
   }, [])
-  const [refreshHint, setRefreshHint] = useState<{ text: string; tone: 'info' | 'success' } | null>(null)
-  const scheduleRefreshHint = useCallback((text: string, tone: 'info' | 'success') => {
+  const [refreshHint, setRefreshHint] = useState<{
+    text: string
+    tone: 'info' | 'success'
+    timeLabel?: string
+  } | null>(null)
+  const scheduleRefreshHint = useCallback((text: string, tone: 'info' | 'success', timeLabel?: string) => {
     if (refreshTimeoutRef.current) {
       window.clearTimeout(refreshTimeoutRef.current)
     }
-    setRefreshHint({ text, tone })
+    setRefreshHint({ text, tone, timeLabel })
     refreshTimeoutRef.current = window.setTimeout(() => {
       setRefreshHint(null)
       refreshTimeoutRef.current = null
@@ -2210,7 +2216,7 @@ function Dashboard() {
     if (!token) {
       return
     }
-    scheduleRefreshHint('🔄 Atualizando...', 'info')
+    scheduleRefreshHint('Atualizando...', 'info')
     try {
       const aggregatedLogs: WeatherLog[] = []
       let page = 1
@@ -2230,7 +2236,7 @@ function Dashboard() {
       }
       setWeatherLogs(aggregatedLogs)
       const nowLabel = formatTime(new Date().toISOString())
-      scheduleRefreshHint(`✅ Atualizado às ${nowLabel}`, 'success')
+      scheduleRefreshHint('Atualizado', 'success', nowLabel)
     } catch (error) {
       if ((error as ApiError).status === 401) {
         handleAuthFailure()
@@ -4221,7 +4227,20 @@ const indexMiniCardClass = cn(historicalCardClass, 'flex flex-col md:min-h-[174p
         <header className={cn(headerGlassClass, 'relative')}>
           {refreshHint && (
             <div className="hero-badge" role="status">
-              {refreshHint.text}
+              <div className="inline-flex items-center gap-2">
+                {refreshHint.tone === 'success' ? (
+                  <CheckCircle2 aria-hidden className="h-4 w-4" />
+                ) : (
+                  <RefreshCcw aria-hidden className="h-4 w-4" />
+                )}
+                <span className="font-medium">{refreshHint.text}</span>
+                {refreshHint.timeLabel && (
+                  <span className="inline-flex items-center gap-1 text-body-sm">
+                    <Clock aria-hidden className="h-3.5 w-3.5" />
+                    <span className="tabular-nums">{refreshHint.timeLabel}</span>
+                  </span>
+                )}
+              </div>
             </div>
           )}
           <div className="flex flex-col gap-2.5">
